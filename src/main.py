@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 from sklearn.cluster import KMeans
 from efficient_apriori import apriori
+import matplotlib.pyplot as plt
+from sklearn.decomposition import PCA
 
 # Function to read the original data matrix
 def read_data_matrix(file_path):
@@ -29,6 +31,20 @@ def derive_voted(data, column_names):
         player_columns_list.append(player_columns[0][:-2])
     return transformed_matrix, player_columns_list
 
+def derive_sum_votes(data, column_names):
+    num_rows, num_cols = data.shape
+    num_players = num_cols // 3
+    transformed_matrix = np.zeros((num_rows, num_players), dtype=int)
+    player_columns_list = []
+
+    for i in range(num_players):
+        player_columns = column_names[i * 3:(i + 1) * 3]
+        player_votes = data[:, i * 3:(i + 1) * 3]
+        transformed_matrix[:, i] = np.sum(player_votes, axis=1)  # Sum the votes for each row
+        player_columns_list.append(player_columns[0][:-2])
+
+    return transformed_matrix, player_columns_list
+
 def to_transactions(data, item_names):
     # transforms a data matrix into a list of transactions
     transactions = []
@@ -41,11 +57,23 @@ def to_transactions(data, item_names):
 def run_kmeans(data, num_clusters):
     kmeans = KMeans(n_clusters=num_clusters, random_state=0)
     clusters = kmeans.fit_predict(data)
+
+    # Reduce dimensionality for plot
+    pca = PCA(n_components=2)
+    reduced_data = pca.fit_transform(data)
+    # Visualize the clusters
+    plt.figure(figsize=(8, 6))
+    plt.scatter(reduced_data[:, 0], reduced_data[:, 1], c=clusters, cmap='viridis')
+    plt.title('K-Means Clustering')
+    plt.xlabel('Feature 1')
+    plt.ylabel('Feature 2')
+    plt.colorbar(label='Cluster')
+    plt.show()
     print(clusters)
     return
 
 # Itemsets
-def run_apriori(data, min_support = 0.3, min_confidence = 0.5):
+def run_apriori(data, min_support = 0.34, min_confidence = 0.5):
     #TODO: Check if matrix is binary
     itemsets, rules = apriori(data, min_support=min_support, min_confidence=min_confidence, verbosity=2)
     print("Frequent Itemsets:")
@@ -63,7 +91,8 @@ if __name__ == "__main__":
     
     #Compute derived matrix
     voted_data, voted_labels = derive_voted(original_data, original_item_names)
-    
+    sum_votes_data, voted_labels = derive_sum_votes(original_data, original_item_names)
+
     transactions = to_transactions(voted_data, voted_labels)
     print("\nTransaction List:")
     print(transactions)
@@ -71,4 +100,4 @@ if __name__ == "__main__":
     run_apriori(transactions)
 
     #Run K-means
-    #run_kmeans(voted_data, 2)
+    run_kmeans(sum_votes_data, 3)
