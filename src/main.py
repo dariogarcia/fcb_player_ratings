@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
 from sklearn.tree import DecisionTreeClassifier, export_text
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
+from time_gif import create_accumulated_votes_animation
 
 # Function to read the original data matrix
 def read_data_matrix(file_path):
@@ -110,28 +111,23 @@ def run_kmeans(data, num_clusters, labels=None):
     return
 
 def run_decision_tree(data, labels, feature_names, max_depth=None):
-    clf = DecisionTreeClassifier(max_depth=max_depth)
+    clf = DecisionTreeClassifier(max_depth=max_depth, criterion="gini")
     clf.fit(data, labels)
     tree_text = export_text(clf, feature_names=feature_names)
     print("\nDecision Tree:")
-    print(tree_text)
-    # Feature importances
-  
+    print(tree_text)  
     # Make predictions
     predictions = clf.predict(data)
     # Calculate performance metrics
     accuracy = accuracy_score(labels, predictions)
     confusion = confusion_matrix(labels, predictions)
     classification_rep = classification_report(labels, predictions)
-
     # Print performance metrics
     print("\nPerformance Metrics:")
     print(f"Accuracy: {accuracy}")
     print(f"Confusion Matrix:\n{confusion}")
     print(f"Classification Report:\n{classification_rep}")
-
     return clf  # Return the trained Decision Tree classifier
-
 
 # Itemsets
 def run_apriori(data_columns, row_labels, min_support = 0.34, min_confidence = 0.5):
@@ -162,7 +158,7 @@ if __name__ == "__main__":
     args = parse_arguments()
     file_path = args.file_path
     original_data, original_item_names = read_data_matrix(file_path)
-    label_column, data_column = None, None
+    label_column = None
     #Define label
     if args.label == 'date':
         label_column = original_data[:, 0]
@@ -182,4 +178,5 @@ if __name__ == "__main__":
     #Run K-means
     #run_kmeans(data_columns, 3, label_column)
     #Run Decision Tree
-    run_decision_tree(data_columns, label_column, row_labels, max_depth=5)
+    #run_decision_tree(data_columns, label_column, row_labels, max_depth=5)
+    create_accumulated_votes_animation(data_columns, row_labels)
