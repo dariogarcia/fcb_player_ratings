@@ -9,6 +9,8 @@ from sklearn.decomposition import PCA
 from sklearn.tree import DecisionTreeClassifier, export_text
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
 from time_gif import create_accumulated_votes_animation
+from sklearn.model_selection import cross_val_score, KFold
+
 
 # Function to read the original data matrix
 def read_data_matrix(file_path):
@@ -51,7 +53,7 @@ def derive_sum_votes(data, column_names):
     return transformed_matrix, player_columns_list
 
 def to_transactions(data, item_names):
-    #Asumes matrix is binary
+    #Asumes matrix is binary. This makes player_bool and player_sum identical
     if not np.all(np.logical_or(data == 0, data == 1)):
         warnings.warn("The data matrix is not binary. Non-binary values will be treated as 1's.")
     # transforms a data matrix into a list of transactions
@@ -61,14 +63,31 @@ def to_transactions(data, item_names):
         transactions.append(tuple(transaction))
     return transactions
 
+def player_rankings(data, column_names):
+    num_players = len(column_names)
+    player_points = np.sum(data, axis=0)  # Calculate the total points for each player
+    player_ranking = np.argsort(player_points)[::-1]  # Get the indices that would sort the players in descending order
+
+    print("Player Rankings:")
+    for rank, player_idx in enumerate(player_ranking, start=1):
+        player_name = column_names[player_idx]
+        points = player_points[player_idx]
+        print(f"Rank {rank}: {player_name} - Total Points: {points}")
+    return
+
 # Clustering
 def run_kmeans(data, num_clusters, labels=None):
     kmeans = KMeans(n_clusters=num_clusters, random_state=0, n_init=20)
     clusters = kmeans.fit_predict(data)
-    print(num_clusters,"-Clusters Found:")
-    for i in range(num_clusters):
-        cluster_indices = np.where(clusters == i)[0]
-        print(f"Cluster {i}: {len(cluster_indices)} data points")
+    cluster_indices = {}
+    for i, cluster in enumerate(clusters):
+        if cluster not in cluster_indices:
+            cluster_indices[cluster] = []
+        cluster_indices[cluster].append(i)
+
+    for cluster, indices in cluster_indices.items():
+        print(f"Cluster {cluster} ({len(indices)} data points): Indices {indices}")
+
 
     # Define a colormap with a fixed number of colors
     colormap = plt.cm.get_cmap('Dark2_r', num_clusters)
@@ -112,22 +131,45 @@ def run_kmeans(data, num_clusters, labels=None):
 
 def run_decision_tree(data, labels, feature_names, max_depth=None):
     clf = DecisionTreeClassifier(max_depth=max_depth, criterion="gini")
+    
+    # Set up 8-fold cross-validation
+    cv = KFold(n_splits=8)
+    tree_list = []  # List to store decision trees
+    
+    for train_index, test_index in cv.split(data):
+        X_train, X_test = data[train_index], data[test_index]
+        y_train, y_test = labels[train_index], labels[test_index]
+        
+        # Fit the decision tree to the training data
+        clf.fit(X_train, y_train)
+        tree_list.append(clf)  # Store the trained decision tree
+        
+        # Make predictions on the test data
+        predictions = clf.predict(X_test)
+        
+        # Calculate and print performance metrics for each fold
+        accuracy = accuracy_score(y_test, predictions)
+        confusion = confusion_matrix(y_test, predictions)
+        classification_rep = classification_report(y_test, predictions)
+        
+        print(f"Fold {len(tree_list)} Decision Tree:")
+        tree_text = export_text(clf, feature_names=feature_names)
+        print(tree_text)
+        print("\nPerformance Metrics for Fold", len(tree_list))
+        print(f"Accuracy: {accuracy}")
+        print(f"Confusion Matrix:\n{confusion}")
+        print(f"Classification Report:\n{classification_rep}")
+    
+    # Print the mean accuracy across all folds
+    scores = cross_val_score(clf, data, labels, cv=cv)
+    print("Cross-Validation Scores:")
+    print(scores)
+    print(f"Mean Accuracy: {scores.mean()}")
+    
+    # Fit the final model to the entire dataset
     clf.fit(data, labels)
-    tree_text = export_text(clf, feature_names=feature_names)
-    print("\nDecision Tree:")
-    print(tree_text)  
-    # Make predictions
-    predictions = clf.predict(data)
-    # Calculate performance metrics
-    accuracy = accuracy_score(labels, predictions)
-    confusion = confusion_matrix(labels, predictions)
-    classification_rep = classification_report(labels, predictions)
-    # Print performance metrics
-    print("\nPerformance Metrics:")
-    print(f"Accuracy: {accuracy}")
-    print(f"Confusion Matrix:\n{confusion}")
-    print(f"Classification Report:\n{classification_rep}")
-    return clf  # Return the trained Decision Tree classifier
+    
+    return clf, tree_list
 
 # Itemsets
 def run_apriori(data_columns, row_labels, min_support = 0.34, min_confidence = 0.5):
@@ -150,6 +192,9 @@ def parse_arguments():
                         help='Column to use as label (default: None)')
     parser.add_argument('--data', type=str, choices=['original','player_bool', 'player_sum'], default='player_bool',
                         help='Column to use as data (default: player_bool)')
+                        #original: Each player as three features 1p, 3p and 5p
+                        #player_bool: Either the player gets one or more votes, or it did not.
+                        #player_sum: Each player has one feature: total points per game
     return parser.parse_args()
 
 
@@ -173,10 +218,20 @@ if __name__ == "__main__":
         data_columns, row_labels = derive_sum_votes(original_data[:,3:], original_item_names[3:])
     elif args.data == 'original':
         data_columns, row_labels = original_data[:,3], original_item_names[3:]
+    
     #Run Apriori
     #run_apriori(data_columns, row_labels)
+    
     #Run K-means
     #run_kmeans(data_columns, 3, label_column)
+    
     #Run Decision Tree
-    #run_decision_tree(data_columns, label_column, row_labels, max_depth=5)
-    create_accumulated_votes_animation(data_columns, row_labels)
+    run_decision_tree(data_columns, label_column, row_labels, max_depth=5)
+
+    #Create accumulated animation
+    #if  args.data != 'original':
+    #    create_accumulated_votes_animation(data_columns, row_labels)
+    
+    #Pring player rankings
+    #data_columns, row_labels = derive_sum_votes(original_data[:,3:], original_item_names[3:])
+    #player_rankings(data_columns, row_labels)
