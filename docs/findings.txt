@@ -1,0 +1,3 @@
+Apriori
+    Position Sum
+        When GK plays well, DF does not. GK, DF is a small itemset
