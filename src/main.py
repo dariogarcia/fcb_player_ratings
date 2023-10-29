@@ -6,10 +6,8 @@ from sklearn.cluster import KMeans
 from efficient_apriori import apriori
 import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
-from sklearn.tree import DecisionTreeClassifier, export_text
-from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
 from time_gif import create_accumulated_votes_animation
-from sklearn.model_selection import cross_val_score, KFold
+from mydt import run_decision_tree, run_decision_tree_cv
 
 
 # Function to read the original data matrix
@@ -51,6 +49,30 @@ def derive_sum_votes(data, column_names):
         transformed_matrix[:, i] = data[:, i * 3]*1 + data[:, i * 3 + 1]*3 + data[:, i * 3 + 2]*5
         player_columns_list.append(player_columns[0][:-2])
     return transformed_matrix, player_columns_list
+
+import numpy as np
+import csv
+
+def derive_pos_sum_votes(data, column_names, csv_file_path):
+    num_rows, num_cols = data.shape
+    num_players = num_cols // 3
+    position_mapping = {}
+    with open(csv_file_path, 'r', newline='') as csvfile:
+        csvreader = csv.reader(csvfile)
+        for row in csvreader:
+            column_name, position = row[0], row[1]
+            position_mapping[column_name] = position
+    # Create a dictionary to store the aggregated sums for each position
+    unique_positions = set(position_mapping.values())
+    aggregated_sums = {position: np.zeros((num_rows,), dtype=int) for position in unique_positions}
+    for i in range(num_players):
+        column_name = column_names[i * 3][:-2]
+        position = position_mapping.get(column_name, "")
+        transformed_column = data[:, i * 3] * 1 + data[:, i * 3 + 1] * 3 + data[:, i * 3 + 2] * 5
+        aggregated_sums[position] = aggregated_sums[position] + transformed_column
+    # Convert the dictionary of aggregated sums to a numpy array with the correct data type
+    pos_sum_matrix = np.column_stack([aggregated_sums[position].astype(int) for position in unique_positions])
+    return pos_sum_matrix, list(unique_positions)
 
 def to_transactions(data, item_names):
     #Asumes matrix is binary. This makes player_bool and player_sum identical
@@ -129,48 +151,6 @@ def run_kmeans(data, num_clusters, labels=None):
     plt.show()
     return
 
-def run_decision_tree(data, labels, feature_names, max_depth=None):
-    clf = DecisionTreeClassifier(max_depth=max_depth, criterion="gini")
-    
-    # Set up 8-fold cross-validation
-    cv = KFold(n_splits=8)
-    tree_list = []  # List to store decision trees
-    
-    for train_index, test_index in cv.split(data):
-        X_train, X_test = data[train_index], data[test_index]
-        y_train, y_test = labels[train_index], labels[test_index]
-        
-        # Fit the decision tree to the training data
-        clf.fit(X_train, y_train)
-        tree_list.append(clf)  # Store the trained decision tree
-        
-        # Make predictions on the test data
-        predictions = clf.predict(X_test)
-        
-        # Calculate and print performance metrics for each fold
-        accuracy = accuracy_score(y_test, predictions)
-        confusion = confusion_matrix(y_test, predictions)
-        classification_rep = classification_report(y_test, predictions)
-        
-        print(f"Fold {len(tree_list)} Decision Tree:")
-        tree_text = export_text(clf, feature_names=feature_names)
-        print(tree_text)
-        print("\nPerformance Metrics for Fold", len(tree_list))
-        print(f"Accuracy: {accuracy}")
-        print(f"Confusion Matrix:\n{confusion}")
-        print(f"Classification Report:\n{classification_rep}")
-    
-    # Print the mean accuracy across all folds
-    scores = cross_val_score(clf, data, labels, cv=cv)
-    print("Cross-Validation Scores:")
-    print(scores)
-    print(f"Mean Accuracy: {scores.mean()}")
-    
-    # Fit the final model to the entire dataset
-    clf.fit(data, labels)
-    
-    return clf, tree_list
-
 # Itemsets
 def run_apriori(data_columns, row_labels, min_support = 0.34, min_confidence = 0.5):
     transactions = to_transactions(data_columns, row_labels)
@@ -190,11 +170,12 @@ def parse_arguments():
     parser.add_argument('file_path', type=str, help='Path to the input CSV file')
     parser.add_argument('--label', type=str, choices=['date', 'outcome', 'competition'], default=None,
                         help='Column to use as label (default: None)')
-    parser.add_argument('--data', type=str, choices=['original','player_bool', 'player_sum'], default='player_bool',
+    parser.add_argument('--data', type=str, choices=['original','player_bool', 'player_sum', 'position_sum'], default='player_bool',
                         help='Column to use as data (default: player_bool)')
                         #original: Each player as three features 1p, 3p and 5p
                         #player_bool: Either the player gets one or more votes, or it did not.
                         #player_sum: Each player has one feature: total points per game
+                        #position_sum: points by players in GK, DF, MF and FW positions are aggregated
     return parser.parse_args()
 
 
@@ -218,6 +199,8 @@ if __name__ == "__main__":
         data_columns, row_labels = derive_sum_votes(original_data[:,3:], original_item_names[3:])
     elif args.data == 'original':
         data_columns, row_labels = original_data[:,3], original_item_names[3:]
+    if args.data == 'position_sum':
+        data_columns, row_labels = derive_pos_sum_votes(original_data[:,3:], original_item_names[3:], '../data/players_raw.csv')
     
     #Run Apriori
     #run_apriori(data_columns, row_labels)
@@ -227,6 +210,7 @@ if __name__ == "__main__":
     
     #Run Decision Tree
     run_decision_tree(data_columns, label_column, row_labels, max_depth=5)
+    #run_decision_tree_cv(data_columns, label_column, row_labels, max_depth=5)
 
     #Create accumulated animation
     #if  args.data != 'original':
