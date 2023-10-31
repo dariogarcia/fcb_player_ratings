@@ -67,4 +67,3 @@ def run_decision_tree_cv(data, labels, feature_names, max_depth=None):
     clf.fit(data, labels)
     
     return clf, tree_list
-

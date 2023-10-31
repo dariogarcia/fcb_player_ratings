@@ -1,19 +1,21 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from sklearn.cluster import AgglomerativeClustering
 from scipy.cluster.hierarchy import dendrogram, linkage
 
-def run_hierarchical_clustering(data, num_clusters, labels=None):
+def run_hierarchical_clustering(data, row_labels=None):
     linkage_matrix = linkage(data, method='ward')
-    dendrogram(linkage_matrix)
+    print(row_labels)
+    dendrogram(linkage_matrix, labels = row_labels)
     # Visualize the dendrogram
     plt.title('Hierarchical Clustering Dendrogram')
     plt.xlabel('Data Point Index')
     plt.ylabel('Distance')
     plt.show()
     # Assign data points to clusters
-    hierarchical_clusters = AgglomerativeClustering(n_clusters=num_clusters).fit_predict(data)
+    hierarchical_clusters = AgglomerativeClustering().fit_predict(data)
     cluster_indices = {}
     for i, cluster in enumerate(hierarchical_clusters):
         if cluster not in cluster_indices:
@@ -34,7 +36,6 @@ def run_kmeans(data, num_clusters, labels=None):
 
     for cluster, indices in cluster_indices.items():
         print(f"Cluster {cluster} ({len(indices)} data points): Indices {indices}")
-
 
     # Define a colormap with a fixed number of colors
     colormap = plt.cm.get_cmap('Dark2_r', num_clusters)
