@@ -17,6 +17,7 @@ def parse_arguments():
                         #player_bool: Either the player gets one or more votes, or it did not.
                         #player_sum: Each player has one feature: total points per game
                         #position_sum: points by players in GK, DF, MF and FW positions are aggregated
+                        #sum_combined: concatenates player_sum and position_sum features
     return parser.parse_args()
 
 # Main
