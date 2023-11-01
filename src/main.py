@@ -18,6 +18,9 @@ def parse_arguments():
                         #player_sum: Each player has one feature: total points per game
                         #position_sum: points by players in GK, DF, MF and FW positions are aggregated
                         #sum_combined: concatenates player_sum and position_sum features
+    parser.add_argument('--analysis', type=str, choices=['itemsets', 'kmeans', 'hc', 'dt', 'accumulated_gif', 'ranking'],
+                        default=None, help='Analysis method(s) to apply, comma-separated (default: itemsets)')
+    
     return parser.parse_args()
 
 # Main
@@ -48,23 +51,21 @@ if __name__ == "__main__":
         data_columns = np.concatenate((data_columns_1, data_columns_2), axis=1)
         row_labels = np.concatenate((row_labels_1, row_labels_2))
     
-    #Run Apriori
-    run_apriori(data_columns, row_labels)
-    
-    #Run K-means
-    run_kmeans(data_columns, 3, label_column)
-
-    #Run Hierarchical Clustering
-    run_hierarchical_clustering(data_columns, label_column)
-
-    #Run Decision Tree
-    run_decision_tree(data_columns, label_column, row_labels, max_depth=5)
-    #run_decision_tree_cv(data_columns, label_column, row_labels, max_depth=5)
-
-    #Create accumulated animation
-    if  args.data != 'original':
+    #Begin analysis methods
+    if args.analysis == None:
+        raise Exception("Please, specify an analysis to perform using --analysis")
+    analysis_methods = args.analysis.split(',')
+    print(analysis_methods)
+    if 'itemsets' in analysis_methods:
+        run_apriori(data_columns, row_labels)
+    if 'kmeans' in analysis_methods:
+        run_kmeans(data_columns, 3, label_column)
+    if 'hc' in analysis_methods:
+        run_hierarchical_clustering(data_columns, label_column)
+    if 'dt' in analysis_methods:
+        run_decision_tree(data_columns, label_column, row_labels, max_depth=5)
+        # run_decision_tree_cv(data_columns, label_column, row_labels, max_depth=5)
+    if 'accumulated_gif' in analysis_methods and args.data != 'original':
         create_accumulated_votes_animation(data_columns, row_labels)
-    
-    #Pring player rankings
-    data_columns, row_labels = derive_sum_votes(original_data[:,3:], original_item_names[3:])
-    player_rankings(data_columns, row_labels)
+    if 'ranking' in analysis_methods:
+        player_rankings(data_columns, row_labels)
