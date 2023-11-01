@@ -1,4 +1,4 @@
-# fcb_player_ratings
+# FCB Player Ratings
 Analysis of FCB player ratings, gathered from RAC1.
 Data includes a csv file with the ratings per game, together with the outcomes, the date and competition (data_raw.csv), and another csv with the player's positions (players_raw). That's all the input data.
 
@@ -22,7 +22,7 @@ Several features are currently implemented, which can be applied to players, pos
 * Kmeans. Using (--label) to paint a PCA plot, runs this algorithm to assign clusters (--analysis kmeans)
 * Itemsets. Runs the apriori algorithm to find frequent itemsets. First transforms data into binary transactions (--analysis itemsets)
 
-# interface examples
+# Interface Examples
 Producing the overall ranking:
 `python main.py --label date --data sum_combined ../data/data_raw.csv --analysis ranking`
 
