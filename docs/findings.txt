@@ -1,3 +1,31 @@
+Ranking
+    FWs get the most points consistently. 45% of all points are given to FWs. Followed by MFs (30%) and DFs (19%). GK gets 7%.
+    If we take into account the number of players in the team on each position (most frequently, 1 GK, 4 DFs, 3MFs and 3FWs),  the ranking of positions is:
+    1st FW
+    2nd MF
+    3rd GK
+    4th DF
+    
+    If we look at specific players, instead of positions, the ranking of players by total votes is:
+    1st Lamine
+    2nd Fermin
+    3rd-4th Gundogan/Joao Felix
+    
+    The next best midfielder is DeJong (5th). The first DF is Kounde (6th) and the next one is Araujo (9th).
+
+    A team composed by the 11 players with most points would be:
+    Ter Stegen (8th)Aunque no sea publico aún, iria genial.
+    Kounde (6th)
+    Araujo (9th)
+    Cancelo (10th)
+    Gavi (7th)
+    DeJong (5th)
+    Gundogan (3rd/4th)
+    Joao Felix (3rd/4th)
+    Lamine (1st)
+    Fermin (2nd)
+    Lewandowski (11th)
+
 Apriori
     Position Sum
-        When GK plays well, DF does not. GK, DF is a small itemset
+        When GK plays well, DF does not.

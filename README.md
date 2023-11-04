@@ -1,6 +1,6 @@
 # FCB Player Ratings
-Analysis of FCB player ratings, gathered from RAC1.
-Data includes a csv file with the ratings per game, together with the outcomes, the date and competition (data_raw.csv), and another csv with the player's positions (players_raw). That's all the input data.
+This AI application for team analysis which runs on toy data. Real data would include real time tracking of player statistics. This repo uses FCB player ratings of the 2023/2024 season, gathered from RAC1 radio streams.
+The toy data includes a csv file with the ratings per game, together with the outcomes, the date and competition (data_raw.csv), and another csv with the player's positions (players_raw). That's all the input data.
 
 Data can be preprocessed in a few ways:
 * original. Not recommended for any of the analysis due to the disaggregated nature (each player represented by 3 columns).
@@ -10,12 +10,12 @@ Data can be preprocessed in a few ways:
 * sum_combined. Concatenates player_sum and position_sum features. For comparison purposes.
 
 Labels can be the following:
-* date. Day and month of the game
-* outcome. Victoria, Empat, Derrota
-* comptetition. 0 La liga, 1 Champions League  
+* date. Day and month of the game (e.g., 28-09)
+* outcome. (V)ictoria, (E)mpat, (D)errota
+* comptetition. (0) La liga, (1) Champions League  
 
 Several features are currently implemented, which can be applied to players, positions, or both:
-* Ranking by points (--analysis ranking)
+* Ranking by total points (--analysis ranking)
 * Produce an animated gif of the accumulation of points per player (--analysis accumulated_gif)
 * Decision trees. Using as target (--label), builds a dendogram (--analysis dt)
 * Hierarchical clustering. Using as x-axis (--label) builds an agglomerative tree (--analysis hc)
