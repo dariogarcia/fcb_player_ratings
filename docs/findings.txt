@@ -27,5 +27,5 @@ Ranking
     Lewandowski (11th)
 
 Apriori
-    Position Sum
-        When GK plays well, DF does not.
+    The strongest associations are {TerStegen->Gundogan} and {Araujo->Gavi->Gundogan}
+    When GK plays well, DF does not.
