@@ -41,6 +41,11 @@ def derive_sum_votes(data, column_names):
         player_columns_list.append(player_columns[0][:-2])
     return transformed_matrix, player_columns_list
 
+def position_order(position):
+    # Define the custom sorting order
+    order = {'GK': 0, 'DF': 1, 'MF': 2, 'FW': 3}
+    return order.get(position, 4)
+
 def derive_pos_sum_votes(data, column_names, csv_file_path):
     # This matrix contains the total of votes per position per game
     # Returns both the data matrix, and the shortened header's list.
@@ -52,17 +57,17 @@ def derive_pos_sum_votes(data, column_names, csv_file_path):
         for row in csvreader:
             column_name, position = row[0], row[1]
             position_mapping[column_name] = position
-    # Create a dictionary to store the aggregated sums for each position
-    unique_positions = set(position_mapping.values())
+    unique_positions = list(dict.fromkeys(position_mapping.values()))
+    unique_positions.sort(key=position_order)
     aggregated_sums = {position: np.zeros((num_rows,), dtype=int) for position in unique_positions}
     for i in range(num_players):
-        column_name = column_names[i * 3][:-2]
+        column_name = column_names[i * 3][:-2] #The -2 strips the "1p/3p/5p" chars from the label
         position = position_mapping.get(column_name, "")
         transformed_column = data[:, i * 3] * 1 + data[:, i * 3 + 1] * 3 + data[:, i * 3 + 2] * 5
         aggregated_sums[position] = aggregated_sums[position] + transformed_column
-    # Convert the dictionary of aggregated sums to a numpy array with the correct data type
     pos_sum_matrix = np.column_stack([aggregated_sums[position].astype(int) for position in unique_positions])
-    return pos_sum_matrix, list(unique_positions)
+    return pos_sum_matrix, unique_positions
+    
 
 def player_rankings(data, column_names):
     player_points = np.sum(data, axis=0)

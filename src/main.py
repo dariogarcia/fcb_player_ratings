@@ -55,7 +55,6 @@ if __name__ == "__main__":
     if args.analysis == None:
         raise Exception("Please, specify an analysis to perform using --analysis")
     analysis_methods = args.analysis.split(',')
-    print(analysis_methods)
     if 'itemsets' in analysis_methods:
         run_apriori(data_columns, row_labels)
     if 'kmeans' in analysis_methods:
