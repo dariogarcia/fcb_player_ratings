@@ -1,30 +1,34 @@
 Ranking
-    FWs get the most points consistently. 45% of all points are given to FWs. Followed by MFs (30%) and DFs (19%). GK gets 7%.
+    FWs get the most points consistently. 39% of all points are given to FWs. Followed by MFs (26.5%) and DFs (22.5%). GK gets 12%.
     If we take into account the number of players in the team on each position (most frequently, 1 GK, 4 DFs, 3MFs and 3FWs),  the ranking of positions is:
-    1st FW
-    2nd MF
-    3rd GK
-    4th DF
+    1st FW 32.5% of votes
+    2nd GK 30%
+    3rd MF 22.5%
+    4th DF 15%
     
     If we look at specific players, instead of positions, the ranking of players by total votes is:
-    1st Lamine
-    2nd Fermin
-    3rd-4th Gundogan/Joao Felix
+    1st Ter Stegen
+    2nd Lamine
+    3rd Araujo
     
-    The next best midfielder is DeJong (5th). The first DF is Kounde (6th) and the next one is Araujo (9th).
+    The second best DF is Kounde (8th).
+    The best midfielder is Gundogan (6th), and the next DeJong (7th). 
+    The second best FW are Fermin and Joao Felix (4th/5th). 
 
     A team composed by the 11 players with most points would be:
-    Ter Stegen (8th)Aunque no sea publico aún, iria genial.
-    Kounde (6th)
-    Araujo (9th)
+    Ter Stegen (1st)
+    Kounde (8th)
+    Araujo (3rd)
     Cancelo (10th)
-    Gavi (7th)
-    DeJong (5th)
-    Gundogan (3rd/4th)
-    Joao Felix (3rd/4th)
-    Lamine (1st)
-    Fermin (2nd)
-    Lewandowski (11th)
+    Iñigo (16th)
+    Gavi (9th)
+    Gundogan (6th)
+    DeJong (7th)
+    Joao Felix (4th/5th)
+    Lamine (2nd)
+    Fermin (4th/5th)
+
+    Iñigo (16th) could be replaced by Lewandowski (11th)
 
 Apriori
     The strongest associations are {TerStegen->Gundogan} and {Araujo->Gavi->Gundogan}

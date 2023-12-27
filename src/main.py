@@ -3,7 +3,7 @@ import numpy as np
 from time_gif import create_accumulated_votes_animation
 from mydt import run_decision_tree, run_decision_tree_cv
 from myclustering import run_hierarchical_clustering, run_kmeans
-from data_loaders import read_data_matrix, derive_voted, derive_sum_votes, derive_pos_sum_votes, player_rankings
+from data_loaders import read_data_matrix, derive_voted, derive_sum_votes, derive_pos_sum_votes, player_rankings, compute_similarities
 from myitemsets import run_apriori
 
 def parse_arguments():
@@ -18,9 +18,8 @@ def parse_arguments():
                         #player_sum: Each player has one feature: total points per game
                         #position_sum: points by players in GK, DF, MF and FW positions are aggregated
                         #sum_combined: concatenates player_sum and position_sum features
-    parser.add_argument('--analysis', type=str, choices=['itemsets', 'kmeans', 'hc', 'dt', 'accumulated_gif', 'ranking'],
-                        default=None, help='Analysis method(s) to apply, comma-separated (default: itemsets)')
-    
+    parser.add_argument('--analysis', type=str, choices=['itemsets', 'kmeans', 'hc', 'dt', 'accumulated_gif', 'ranking', 'similarities'],
+                        default='ranking', help='Analysis method(s) to apply, comma-separated (default: ranking)')
     return parser.parse_args()
 
 # Main
@@ -28,7 +27,6 @@ if __name__ == "__main__":
     args = parse_arguments()
     file_path = args.file_path
     original_data, original_item_names = read_data_matrix(file_path)
-    label_column = None
     #Define label
     if args.label == 'date':
         label_column = original_data[:, 0]
@@ -52,11 +50,11 @@ if __name__ == "__main__":
         row_labels = np.concatenate((row_labels_1, row_labels_2))
     
     #Begin analysis methods
-    if args.analysis == None:
-        raise Exception("Please, specify an analysis to perform using --analysis")
     analysis_methods = args.analysis.split(',')
     if 'ranking' in analysis_methods:
         player_rankings(data_columns, row_labels)
+    if 'similarities' in analysis_methods:
+        compute_similarities(data_columns, row_labels, label_column)
     if 'accumulated_gif' in analysis_methods and args.data != 'original':
         create_accumulated_votes_animation(data_columns, row_labels)
     if 'itemsets' in analysis_methods:

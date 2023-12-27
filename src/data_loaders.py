@@ -1,6 +1,7 @@
 import csv
 import numpy as np
 import pandas as pd
+from sklearn.metrics.pairwise import cosine_similarity, euclidean_distances
 
 # Function to read the original data matrix
 def read_data_matrix(file_path):
@@ -67,8 +68,8 @@ def derive_pos_sum_votes(data, column_names, csv_file_path):
         aggregated_sums[position] = aggregated_sums[position] + transformed_column
     pos_sum_matrix = np.column_stack([aggregated_sums[position].astype(int) for position in unique_positions])
     return pos_sum_matrix, unique_positions
-    
 
+# Post-process
 def player_rankings(data, column_names):
     player_points = np.sum(data, axis=0)
     player_ranking = np.argsort(player_points)[::-1]
@@ -77,3 +78,36 @@ def player_rankings(data, column_names):
     for rank, player_idx in enumerate(player_ranking, start=1):
         print(f"Rank {rank}: {column_names[player_idx]} - Total Points: {player_points[player_idx]}")
     return
+
+def compute_similarities(data, row_labels, column_labels, measure="euclidean"):
+        #TODO: high redundancy, half code by iterating over data-games, data.transpose()-players
+        #TODO: euclidean is distance, not similarity. argmin or compute inverse
+        print(">>>>>>>>>>Similarities among players<<<<<<<<<<")
+        if measure == 'cosine':
+            similarity_matrix = cosine_similarity(data.transpose())
+        elif measure == 'euclidean':
+            similarity_matrix = euclidean_distances(data.transpose())
+            similarity_matrix = similarity_matrix * -1
+        else:
+            print('Unrecognized similarity measure:',measure)
+            return 
+        similarity_matrix[np.diag_indices(len(row_labels))] = 0
+        for idx, label in enumerate(row_labels):
+            most_similar_index = np.argmax(similarity_matrix[idx])
+            most_similar_similarity = similarity_matrix[idx][most_similar_index]
+            print(f"Most similar sample to '{label}':")
+            print(f" - '{row_labels[most_similar_index]}' (Similarity: {most_similar_similarity:.2f})")
+            print()  # Add an empty line between results
+        
+        print(">>>>>>>>>>Similarities among games<<<<<<<<<<")
+        if measure == 'cosine':
+            similarity_matrix = cosine_similarity(data)
+        elif measure == 'euclidean':
+            similarity_matrix = euclidean_distances(data)
+        similarity_matrix[np.diag_indices(len(column_labels))] = 0
+        for idx, label in enumerate(column_labels):
+            most_similar_index = np.argmax(similarity_matrix[idx])
+            most_similar_similarity = similarity_matrix[idx][most_similar_index]
+            print(f"Most similar sample to '{label}':")
+            print(f" - '{column_labels[most_similar_index]}' (Similarity: {most_similar_similarity:.2f})")
+            print()  # Add an empty line between results

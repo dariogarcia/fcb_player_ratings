@@ -30,5 +30,5 @@ def create_accumulated_votes_animation(data, labels, fps=0.3):
             ax.bar(player, accumulated_data[frame, player-1], color=color, label=labels[player-1])
         ax.set_xticks(players)
         ax.set_xticklabels(labels, rotation=45, ha='right')
-    ani = FuncAnimation(fig, update, frames=range(num_games), repeat=False, blit=False, interval=1000/fps)
+    ani = FuncAnimation(fig, update, frames=range(num_games), repeat=False, blit=False, interval=700/fps)
     ani.save('../data/accumulated_points.gif', writer='pillow', fps=fps)
